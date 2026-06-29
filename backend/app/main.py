@@ -23,7 +23,7 @@ from fastapi.responses import FileResponse
 
 from .config import settings
 from .database import Base, engine, SessionLocal
-from .routers import auth_router, vocab_router, stats_router
+from .routers import auth_router, vocab_router, stats_router, writing_router
 from .seed_util import ensure_user, import_cards_from_csv
 
 app = FastAPI(title="TOEFL/GRE Study — Vocab SRS", version="0.1.0")
@@ -39,6 +39,7 @@ app.add_middleware(
 app.include_router(auth_router.router)
 app.include_router(vocab_router.router)
 app.include_router(stats_router.router)
+app.include_router(writing_router.router)
 
 
 @app.on_event("startup")

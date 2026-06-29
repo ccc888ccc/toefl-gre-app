@@ -33,7 +33,6 @@ class CardOut(CardBase):
 
 
 class ReviewCardOut(CardOut):
-    """A card plus its current SRS state, as served to the review screen."""
     due_date: date | None = None
     repetitions: int = 0
     is_new: bool = True
@@ -66,10 +65,65 @@ class ForecastDay(BaseModel):
 
 class StatsOut(BaseModel):
     total_cards: int
-    mastered: int           # cards with interval >= 21 days
+    mastered: int
     learning: int
     due_today: int
     new_available: int
     streak_days: int
     reviewed_today: int
     forecast: list[ForecastDay]
+
+
+# ---------- Tool 2: writing / speaking grader ----------
+
+class WritingSubmitIn(BaseModel):
+    task_type: str
+    prompt: str | None = None
+    user_answer: str
+    parent_id: int | None = None
+
+
+class ProblemSentence(BaseModel):
+    original: str = ""
+    issue: str = ""
+    rewrite: str = ""
+
+
+class Feedback(BaseModel):
+    score_overall: float | None = None
+    breakdown: dict[str, float] = {}
+    problem_sentences: list[ProblemSentence] = []
+    weaknesses: list[str] = []
+    model_high_score_version: str = ""
+    summary_zh: str = ""
+
+
+class WritingSubmissionOut(BaseModel):
+    id: int
+    task_type: str
+    prompt: str | None = None
+    user_answer: str
+    feedback: Feedback
+    parent_id: int | None = None
+    parent_score: float | None = None
+    created_at: datetime
+
+
+class SubmissionListItem(BaseModel):
+    id: int
+    task_type: str
+    score_overall: float | None = None
+    prompt_preview: str = ""
+    parent_id: int | None = None
+    created_at: datetime
+
+
+class WeaknessItem(BaseModel):
+    category: str
+    count: int
+    last_seen: datetime
+
+
+class PromptSample(BaseModel):
+    task_type: str
+    prompt: str

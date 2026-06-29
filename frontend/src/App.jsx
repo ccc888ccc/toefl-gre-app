@@ -4,6 +4,7 @@ import Login from "./components/Login.jsx";
 import ReviewView from "./components/ReviewView.jsx";
 import StatsView from "./components/StatsView.jsx";
 import AddWordView from "./components/AddWordView.jsx";
+import GraderView from "./components/GraderView.jsx";
 
 export default function App() {
   const [authed, setAuthed] = useState(!!getToken());
@@ -33,17 +34,21 @@ export default function App() {
         {tab === "review" && <ReviewView onAuthLost={logout} />}
         {tab === "stats" && <StatsView onAuthLost={logout} />}
         {tab === "add" && <AddWordView />}
+        {tab === "grader" && <GraderView onAuthLost={logout} />}
       </main>
 
       <nav className="tabbar">
         <button className={tab === "review" ? "active" : ""} onClick={() => setTab("review")}>
-          <span className="ico">📚</span>今日複習
+          <span className="ico">📚</span>複習
         </button>
         <button className={tab === "stats" ? "active" : ""} onClick={() => setTab("stats")}>
           <span className="ico">📊</span>統計
         </button>
         <button className={tab === "add" ? "active" : ""} onClick={() => setTab("add")}>
           <span className="ico">➕</span>加生字
+        </button>
+        <button className={tab === "grader" ? "active" : ""} onClick={() => setTab("grader")}>
+          <span className="ico">✍️</span>批改
         </button>
       </nav>
     </div>

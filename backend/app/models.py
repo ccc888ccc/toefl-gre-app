@@ -65,3 +65,36 @@ class ReviewEvent(Base):
     card_id: Mapped[int] = mapped_column(ForeignKey("vocab_cards.id"), index=True)
     grade: Mapped[str] = mapped_column(String(8))   # again / hard / good / easy
     reviewed_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, index=True)
+
+
+# ============ Tool 2: writing / speaking grader (spec section 4) ============
+
+class WritingSubmission(Base):
+    __tablename__ = "writing_submissions"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    task_type: Mapped[str] = mapped_column(String(48), index=True)
+    prompt: Mapped[str | None] = mapped_column(Text, nullable=True)
+    user_answer: Mapped[str] = mapped_column(Text)
+    ai_feedback: Mapped[str | None] = mapped_column(Text, nullable=True)
+    score_overall: Mapped[float | None] = mapped_column(Float, nullable=True)
+    score_breakdown: Mapped[str | None] = mapped_column(Text, nullable=True)
+    parent_id: Mapped[int | None] = mapped_column(
+        ForeignKey("writing_submissions.id"), nullable=True, index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, index=True)
+
+
+class ErrorPattern(Base):
+    """Running tally of the weakness categories Claude flags across submissions."""
+    __tablename__ = "error_patterns"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    category: Mapped[str] = mapped_column(String(64), unique=True, index=True)
+    count: Mapped[int] = mapped_column(Integer, default=0)
+    last_seen: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+tablename__ = "error_patterns"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    category: Mapped[str] = mapped_column(String(64), unique=True, index=True)
+    count: Mapped[int] = mapped_column(Integer, default=0)
+    last_seen: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)

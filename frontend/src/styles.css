@@ -56,7 +56,7 @@ textarea { min-height: 64px; resize: vertical; }
 .tabbar {
   position: fixed; bottom: 0; left: 0; right: 0;
   max-width: 560px; margin: 0 auto;
-  display: grid; grid-template-columns: repeat(3, 1fr);
+  display: grid; grid-template-columns: repeat(4, 1fr);
   background: var(--surface); border-top: 1px solid var(--border);
   padding-bottom: env(safe-area-inset-bottom);
 }
@@ -151,3 +151,52 @@ textarea { min-height: 64px; resize: vertical; }
 .bar-label { font-size: 11px; color: var(--muted); margin-top: 6px; }
 
 .add-form h3 { margin-top: 0; }
+
+/* --- Tool 2: grader --- */
+.grader .card, .result .card { margin-bottom: 14px; }
+.fld-label { display: block; font-size: 13px; color: var(--muted); margin: 10px 0 2px; }
+.row-between { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; }
+.row-between .fld-label { margin: 0; }
+select {
+  width: 100%; padding: 12px 14px; margin: 6px 0; font-size: 16px;
+  border-radius: 11px; border: 1px solid var(--border);
+  background: var(--surface-2); color: var(--text);
+}
+textarea.tall { min-height: 90px; }
+textarea.taller { min-height: 160px; }
+.ghost {
+  width: 100%; padding: 12px; margin-top: 8px; background: transparent;
+  color: var(--muted); border: 1px solid var(--border); border-radius: 12px; font-size: 15px;
+}
+
+.grading { padding: 40px 20px; }
+.spinner {
+  width: 38px; height: 38px; margin: 0 auto 16px; border-radius: 50%;
+  border: 4px solid var(--border); border-top-color: var(--primary);
+  animation: spin 0.9s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.score-card { text-align: center; }
+.score-big { font-size: 46px; font-weight: 800; color: var(--good); }
+.score-max { font-size: 20px; color: var(--muted); font-weight: 600; }
+.delta { margin-top: 8px; font-size: 14px; }
+.delta.up { color: var(--good); }
+.delta.down { color: var(--hard); }
+
+.dim { margin: 10px 0; }
+.dim-top { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 4px; }
+.dim-track { height: 9px; background: var(--surface-2); border-radius: 6px; overflow: hidden; }
+.dim-fill { height: 100%; background: var(--primary); border-radius: 6px; transition: width .3s; }
+.dim-fill.warn { background: var(--hard); }
+
+.summary { line-height: 1.6; }
+.prob { border-left: 3px solid var(--border); padding: 6px 0 6px 12px; margin-bottom: 14px; }
+.prob-orig { color: #fca5a5; line-height: 1.5; }
+.prob-issue { color: var(--muted); font-size: 13px; margin: 4px 0; }
+.prob-fix { color: #86efac; line-height: 1.5; }
+.model-ver { line-height: 1.7; white-space: pre-wrap; color: #cbd5e1; }
+
+.tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.tag { background: var(--surface-2); border: 1px solid var(--border); color: var(--text);
+  font-size: 12px; padding: 4px 10px; border-radius: 999px; }

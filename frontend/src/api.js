@@ -39,4 +39,12 @@ export const api = {
     request("/vocab/review", { method: "POST", body: { card_id, grade } }),
   addCard: (card) => request("/vocab/cards", { method: "POST", body: card }),
   stats: () => request("/stats"),
+
+  // --- Tool 2: writing / speaking grader ---
+  taskTypes: () => request("/writing/task-types"),
+  prompts: () => request("/writing/prompts"),
+  gradeSubmit: (body) => request("/writing/submit", { method: "POST", body }),
+  submissions: () => request("/writing/submissions"),
+  submission: (id) => request(`/writing/submissions/${id}`),
+  weaknesses: () => request("/writing/weaknesses"),
 };
