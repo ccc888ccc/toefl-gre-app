@@ -1,0 +1,13 @@
+# Lower-bound pins (not exact) so pip picks versions with prebuilt wheels for
+# whatever Python you have (including 3.13/3.14). Exact pins on older versions
+# force a slow source build of pydantic-core (needs Rust) on new Pythons.
+fastapi>=0.115
+uvicorn>=0.34
+SQLAlchemy>=2.0.36
+pydantic>=2.11
+pydantic-settings>=2.7
+python-dotenv>=1.0
+PyJWT>=2.9
+python-multipart>=0.0.20
+# Only needed to run the vocab seed generator (seed/generate_vocab.py):
+anthropic>=0.40

@@ -1,0 +1,29 @@
+# --- Secrets & data (NEVER commit) ---
+.env
+backend/.env
+*.db
+*.sqlite
+*.sqlite3
+backend/data/
+data/
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+
+# --- Node / frontend ---
+node_modules/
+frontend/dist/
+frontend/.vite/
+
+# --- Runtime logs ---
+start_log.txt
+
+# --- OS / editor ---
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
