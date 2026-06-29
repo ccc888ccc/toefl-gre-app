@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { api } from "../api.js";
+import { speak } from "../tts.js";
 
 const GRADES = [
   { key: "again", label: "忘記", hint: "Again", cls: "g-again" },
@@ -29,9 +30,7 @@ export default function ReviewView({ onAuthLost }) {
     }
   }, [onAuthLost]);
 
-  useEffect(() => {
-    load();
-  }, [load]);
+  useEffect(() => { load(); }, [load]);
 
   const grade = async (g) => {
     const card = queue[idx];
@@ -69,6 +68,8 @@ export default function ReviewView({ onAuthLost }) {
       </div>
 
       <div className="flashcard" onClick={() => !flipped && setFlipped(true)}>
+        <button type="button" className="tts card-tts" aria-label="發音"
+          onClick={(e) => { e.stopPropagation(); speak(card.word); }}>🔊</button>
         <div className="word">{card.word}</div>
         {card.is_new && <span className="badge">新字</span>}
 

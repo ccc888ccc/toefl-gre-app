@@ -17,19 +17,28 @@ from ..schemas import (
 router = APIRouter(prefix="/api/writing", tags=["writing"],
                    dependencies=[Depends(current_user)])
 
-# A few built-in prompts so you can practice without hunting for a question.
+# Built-in 2026-format prompts so you can practice without hunting for a question.
 PROMPT_BANK: list[dict] = [
+    {"task_type": "toefl_writing_email",
+     "prompt": "You recently bought a laptop online, but it arrived with a cracked screen. "
+               "Write an email to the online store's customer-service team. Explain the problem, "
+               "say how it has affected you, and request a specific solution."},
+    {"task_type": "toefl_writing_email",
+     "prompt": "Your professor announced that next week's class will be moved online. Write an email "
+               "to your professor asking two questions about the change and explaining one concern "
+               "you have about attending online."},
     {"task_type": "toefl_writing_academic_discussion",
-     "prompt": "Your professor is teaching a class on economics. Write a post responding "
-               "to the professor's question. Doctor Achebe asks: 'Some people think governments "
-               "should prioritize economic growth above environmental protection. Others disagree. "
-               "What is your view, and why?'"},
+     "prompt": "Your professor is teaching a class on economics. Doctor Achebe asks: 'Some people "
+               "think governments should prioritize economic growth above environmental protection. "
+               "Others disagree. What is your view, and why?' Write a post contributing your opinion."},
     {"task_type": "toefl_writing_academic_discussion",
      "prompt": "Doctor Lee asks: 'Should universities require all students to take public-speaking "
                "courses? Why or why not?' Write a post contributing your opinion with reasons."},
-    {"task_type": "toefl_speaking",
-     "prompt": "Some people prefer to study alone. Others prefer to study with a group. Which do you "
-               "prefer and why? (Paste your 45-second spoken-response transcript.)"},
+    {"task_type": "toefl_speaking_listen_repeat",
+     "prompt": "The committee has decided to postpone the annual conference until early next spring."},
+    {"task_type": "toefl_speaking_interview",
+     "prompt": "Interviewer: 'Tell me about a skill you would like to learn in the future and explain "
+               "why it interests you.' (Paste your spoken-response transcript.)"},
     {"task_type": "gre_issue",
      "prompt": "\"Governments should focus on solving the immediate problems of today rather than on "
                "trying to solve the anticipated problems of the future.\" Write a response in which you "

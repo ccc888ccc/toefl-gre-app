@@ -127,3 +127,53 @@ class WeaknessItem(BaseModel):
 class PromptSample(BaseModel):
     task_type: str
     prompt: str
+
+
+class AutofillIn(BaseModel):
+    word: str
+
+
+class AutofillOut(BaseModel):
+    part_of_speech: str = ""
+    definition_en: str = ""
+    definition_zh: str = ""
+    example: str = ""
+    synonyms: str = ""
+
+
+# ---------- Tool 3: reading / listening review ----------
+
+class PracticeSubmitIn(BaseModel):
+    section: str                       # reading / listening
+    source: str | None = None
+    question_text: str | None = None
+    question_type: str | None = None
+    user_choice: str | None = None
+    correct_choice: str | None = None
+
+
+class PracticeExplanation(BaseModel):
+    summary_zh: str = ""
+    why_correct_zh: str = ""
+    why_wrong_zh: str = ""
+    type_strategy_zh: str = ""
+
+
+class PracticeLogOut(BaseModel):
+    id: int
+    section: str
+    source: str | None = None
+    question_text: str | None = None
+    question_type: str | None = None
+    user_choice: str | None = None
+    correct_choice: str | None = None
+    is_correct: bool | None = None
+    explanation: PracticeExplanation
+    created_at: datetime
+
+
+class TypeStat(BaseModel):
+    question_type: str
+    total: int
+    correct: int
+    accuracy: float

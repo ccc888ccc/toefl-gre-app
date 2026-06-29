@@ -92,9 +92,22 @@ class ErrorPattern(Base):
     category: Mapped[str] = mapped_column(String(64), unique=True, index=True)
     count: Mapped[int] = mapped_column(Integer, default=0)
     last_seen: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
-tablename__ = "error_patterns"
+
+
+# ============ Tool 3: reading / listening review (spec section 5) ============
+from sqlalchemy import Boolean as _Boolean
+
+
+class PracticeLog(Base):
+    __tablename__ = "practice_logs"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    category: Mapped[str] = mapped_column(String(64), unique=True, index=True)
-    count: Mapped[int] = mapped_column(Integer, default=0)
-    last_seen: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    section: Mapped[str] = mapped_column(String(16), index=True)        # reading / listening
+    source: Mapped[str | None] = mapped_column(String(128), nullable=True)   # e.g. 學而思 set 12
+    question_text: Mapped[str | None] = mapped_column(Text, nullable=True)
+    question_type: Mapped[str | None] = mapped_column(String(48), nullable=True, index=True)
+    user_choice: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    correct_choice: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    is_correct: Mapped[bool | None] = mapped_column(_Boolean, nullable=True)
+    ai_explanation: Mapped[str | None] = mapped_column(Text, nullable=True)   # Claude JSON
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, index=True)

@@ -1,55 +1,75 @@
-"""Tool 2: writing / speaking grader (spec section 4).
+"""Tool 2: writing / speaking grader (spec section 4, updated for the 2026 TOEFL).
 
-Builds a per-task-type prompt, asks Claude to grade against the official rubric
-and return STRICT JSON only, then parses it robustly. The Claude API key lives in
-backend/.env and is used only here on the server.
+2026 TOEFL iBT task types supported here:
+  - Write an Email
+  - Write for an Academic Discussion
+  - Speaking: Listen and Repeat
+  - Speaking: Take an Interview
+Plus GRE Analytical Writing (Issue / Argument), which is unchanged.
+
+Builds a per-task-type prompt, asks Claude to grade against the rubric and return
+STRICT JSON only, then parses it robustly. The Claude API key lives in backend/.env
+and is used only here on the server.
 """
 import json
 import re
 
 from .config import settings
 
-# Each task type: human label + the rubric dimensions (snake_case keys used in the
-# returned "breakdown" object) + the score scale.
+# Each task type: human label + rubric dimensions (snake_case keys used in the
+# returned "breakdown") + the score scale. TOEFL 2026 uses a 1-6 band scale.
 TASK_SPECS: dict[str, dict] = {
-    "toefl_writing_integrated": {
-        "label": "TOEFL Integrated Writing",
+    "toefl_writing_email": {
+        "label": "TOEFL Writing – Write an Email",
         "dimensions": ["development", "organization", "language_use"],
-        "scale": "0-5",
-        "guidance": "Judge how accurately and completely the response conveys the "
-                    "relevant information from the (assumed) lecture and reading and "
-                    "how well they are related, plus organization and language use.",
+        "scale": "1-6",
+        "guidance": "This is the 2026 TOEFL 'Write an Email' task. Judge task fulfillment "
+                    "(does it address the situation and cover all required points), an "
+                    "appropriate and consistent email register/tone, clear organization, "
+                    "and accurate, varied language.",
     },
     "toefl_writing_academic_discussion": {
-        "label": "TOEFL Writing for an Academic Discussion",
+        "label": "TOEFL Writing – Academic Discussion",
         "dimensions": ["development", "organization", "language_use"],
-        "scale": "0-5",
-        "guidance": "Judge how well the response contributes a clear, well-supported "
-                    "opinion to the online discussion, with relevant elaboration and "
-                    "effective, varied language.",
+        "scale": "1-6",
+        "guidance": "This is the 2026 TOEFL 'Write for an Academic Discussion' task "
+                    "(about 200-250 words). Judge how well the response contributes a clear, "
+                    "well-supported opinion to the online discussion, with relevant elaboration "
+                    "and effective, varied language.",
     },
-    "toefl_speaking": {
-        "label": "TOEFL Speaking",
+    "toefl_speaking_listen_repeat": {
+        "label": "TOEFL Speaking – Listen and Repeat",
+        "dimensions": ["accuracy", "delivery", "language_use"],
+        "scale": "1-6",
+        "guidance": "This is the 2026 TOEFL 'Listen and Repeat' speaking task. The PROMPT is the "
+                    "target sentence the test-taker had to repeat; the RESPONSE is a transcript of "
+                    "what they actually said. Judge accuracy (how completely and correctly the "
+                    "sentence was reproduced — missing/changed words lower this), delivery (fluency "
+                    "and pronunciation as far as the transcript suggests), and language_use.",
+    },
+    "toefl_speaking_interview": {
+        "label": "TOEFL Speaking – Take an Interview",
         "dimensions": ["delivery", "language_use", "topic_development"],
-        "scale": "0-4",
-        "guidance": "This is a transcript of a spoken response. Judge delivery (fluency, "
-                    "clarity implied by the transcript), language use (grammar, vocabulary), "
-                    "and topic development (progression and completeness of ideas).",
+        "scale": "1-6",
+        "guidance": "This is the 2026 TOEFL 'Take an Interview' speaking task. The RESPONSE is a "
+                    "transcript of a spoken answer to an interview-style question. Judge delivery "
+                    "(fluency/clarity implied by the transcript), language use (grammar, vocabulary), "
+                    "and topic development (relevance, progression and completeness of ideas).",
     },
     "gre_issue": {
         "label": "GRE Analytical Writing – Issue",
         "dimensions": ["analysis", "support", "organization", "language"],
         "scale": "0-6",
-        "guidance": "Judge the cogency of the position on the issue, the quality of "
-                    "reasons and examples, organization, and control of language.",
+        "guidance": "Judge the cogency of the position on the issue, the quality of reasons and "
+                    "examples, organization, and control of language.",
     },
     "gre_argument": {
         "label": "GRE Analytical Writing – Argument",
         "dimensions": ["analysis", "support", "organization", "language"],
         "scale": "0-6",
-        "guidance": "Judge how well the response identifies and analyzes the argument's "
-                    "logical flaws and assumptions (do NOT reward agreeing/disagreeing), "
-                    "plus support, organization, and language.",
+        "guidance": "Judge how well the response identifies and analyzes the argument's logical "
+                    "flaws and assumptions (do NOT reward agreeing/disagreeing), plus support, "
+                    "organization, and language.",
     },
 }
 
@@ -60,6 +80,7 @@ WEAKNESS_TAXONOMY = [
     "subject_verb_agreement", "article_misuse", "preposition_error",
     "vocabulary_repetition", "awkward_phrasing", "run_on_sentences",
     "sentence_fragments", "off_topic", "redundancy", "informal_tone",
+    "missing_words", "wrong_register", "incomplete_task",
 ]
 
 FENCE_RE = re.compile(r"^\s*```(?:json)?\s*|\s*```\s*$", re.IGNORECASE)

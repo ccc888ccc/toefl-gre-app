@@ -23,7 +23,7 @@ from fastapi.responses import FileResponse
 
 from .config import settings
 from .database import Base, engine, SessionLocal
-from .routers import auth_router, vocab_router, stats_router, writing_router
+from .routers import auth_router, vocab_router, stats_router, writing_router, practice_router
 from .seed_util import ensure_user, import_cards_from_csv
 
 app = FastAPI(title="TOEFL/GRE Study — Vocab SRS", version="0.1.0")
@@ -40,6 +40,7 @@ app.include_router(auth_router.router)
 app.include_router(vocab_router.router)
 app.include_router(stats_router.router)
 app.include_router(writing_router.router)
+app.include_router(practice_router.router)
 
 
 @app.on_event("startup")
@@ -67,15 +68,4 @@ def health():
 
 
 # --- Optionally serve the built frontend (frontend/dist) as static files. ---
-# In local dev you'll usually run Vite separately (npm run dev); this block only
-# kicks in after `npm run build`, so one server can serve everything in prod.
-_dist = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "frontend", "dist"))
-if os.path.isdir(_dist):
-    app.mount("/assets", StaticFiles(directory=os.path.join(_dist, "assets")), name="assets")
-
-    @app.get("/{full_path:path}")
-    def spa(full_path: str):
-        candidate = os.path.join(_dist, full_path)
-        if full_path and os.path.isfile(candidate):
-            return FileResponse(candidate)
-        return FileResponse(os.path.join(_dist, "index.html"))
+# In local dev you'll usually run Vite 

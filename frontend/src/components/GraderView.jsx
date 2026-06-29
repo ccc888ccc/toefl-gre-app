@@ -3,16 +3,19 @@ import { api } from "../api.js";
 
 function scaleMax(taskTypes, key) {
   const t = taskTypes.find((x) => x.key === key);
-  if (!t) return 5;
+  if (!t) return 6;
   const m = /(\d+)\s*$/.exec(t.scale || "");
-  return m ? Number(m[1]) : 5;
+  return m ? Number(m[1]) : 6;
 }
 
 const DIM_LABEL = {
   development: "內容發展", organization: "組織結構", language_use: "語言運用",
-  delivery: "口語表達", topic_development: "主題發展",
+  delivery: "口語表達", topic_development: "主題發展", accuracy: "複述準確度",
   analysis: "分析", support: "論證支持", language: "語言",
 };
+
+const isSpeaking = (k) => k.startsWith("toefl_speaking");
+const isRepeat = (k) => k === "toefl_speaking_listen_repeat";
 
 export default function GraderView({ onAuthLost }) {
   const [taskTypes, setTaskTypes] = useState([]);
@@ -95,6 +98,13 @@ export default function GraderView({ onAuthLost }) {
     );
   }
 
+  const promptPlaceholder = isRepeat(taskType)
+    ? "貼上你要複述的「目標句子」"
+    : "貼上題目 (口說題也貼這裡)";
+  const answerExtra = isRepeat(taskType)
+    ? "（你複述的逐字稿）"
+    : isSpeaking(taskType) ? "（口說逐字稿）" : "";
+
   return (
     <div className="grader">
       {weak.length > 0 && <WeaknessBar weak={weak} />}
@@ -110,15 +120,15 @@ export default function GraderView({ onAuthLost }) {
         </select>
 
         <div className="row-between">
-          <label className="fld-label">題目</label>
+          <label className="fld-label">{isRepeat(taskType) ? "目標句子" : "題目"}</label>
           <button type="button" className="link" onClick={fillFromBank}>用內建題庫</button>
         </div>
         <textarea
-          className="tall" placeholder="貼上題目 (口說題也貼這裡)"
+          className="tall" placeholder={promptPlaceholder}
           value={prompt} onChange={(e) => setPrompt(e.target.value)}
         />
 
-        <label className="fld-label">你的作答{taskType === "toefl_speaking" ? "（口說逐字稿）" : ""}</label>
+        <label className="fld-label">你的作答{answerExtra}</label>
         <textarea
           className="taller" placeholder="貼上你的作答 / 逐字稿"
           value={answer} onChange={(e) => setAnswer(e.target.value)}
