@@ -8,11 +8,23 @@ services:
     volumes:
       - ./data:/data          # SQLite database persists here
     ports:
-      - "8000:8000"           # direct access (optional if you use the tunnel)
+      - "8000:8000"           # direct access (optional if you use a tunnel)
     restart: unless-stopped
 
-  # Optional: public HTTPS URL with no open ports / firewall changes.
-  # Put TUNNEL_TOKEN in backend/.env, then: docker compose --profile tunnel up -d
+  # FREE public HTTPS, no domain, no account: random https://xxx.trycloudflare.com URL.
+  # Start with:  docker compose --profile quick up -d --build
+  # Find the URL: docker compose logs tunnel-quick | grep trycloudflare
+  # (URL changes whenever this container restarts.)
+  tunnel-quick:
+    image: cloudflare/cloudflared:latest
+    command: tunnel --no-autoupdate --url http://app:8000
+    restart: unless-stopped
+    depends_on:
+      - app
+    profiles: ["quick"]
+
+  # FIXED HTTPS URL (needs a domain on Cloudflare). Put TUNNEL_TOKEN in backend/.env.
+  # Start with:  docker compose --profile tunnel up -d --build
   tunnel:
     image: cloudflare/cloudflared:latest
     command: tunnel --no-autoupdate run

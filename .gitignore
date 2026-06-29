@@ -22,8 +22,12 @@ frontend/.vite/
 # --- Runtime logs ---
 start_log.txt
 
-# --- OS / editor ---
-.DS_Store
-Thumbs.db
-.idea/
-.vscode/
+# --- OS / editor --
+# --- SSH / private keys (NEVER commit) ---
+*.key
+*.pem
+*.ppk
+*.pub
+id_rsa
+id_ed25519
+ssh-key-*

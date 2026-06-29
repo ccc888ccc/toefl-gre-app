@@ -19,7 +19,7 @@ mimetypes.add_type("image/svg+xml", ".svg")
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 
 from .config import settings
 from .database import Base, engine, SessionLocal
@@ -68,4 +68,32 @@ def health():
 
 
 # --- Optionally serve the built frontend (frontend/dist) as static files. ---
+# In local dev you'll usually run Vite (npm run dev) on :5173 and hit the API
+# directly. In the Docker image the frontend is built and copied to
+# /app/frontend/dist, so the backend serves the whole app on a single port.
+# We mount /assets for the hashed JS/CSS bundles, and add a catch-all route
+# that returns index.html for any non-API path so client-side routing works.
+_DIST = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "frontend", "dist"))
+
+if os.path.isdir(_DIST):
+    _ASSETS = os.path.join(_DIST, "assets")
+    if os.path.isdir(_ASSETS):
+        app.mount("/assets", StaticFiles(directory=_ASSETS), name="assets")
+
+    @app.get("/")
+    def _serve_index():
+        return FileResponse(os.path.join(_DIST, "index.html"))
+
+    # SPA fallback: any path that isn't an /api route or a real static file
+    # returns index.html so the frontend router can handle it.
+    @app.get("/{full_path:path}")
+    def _spa_fallback(full_path: str):
+        if full_path.startswith("api/"):
+            return JSONResponse({"detail": "Not Found"}, status_code=404)
+        candidate = os.path.join(_DIST, full_path)
+        if os.path.isfile(candidate):
+            return FileResponse(candidate)
+        return FileResponse(os.path.join(_DIST, "index.html"))
+else:
+    print(f"[startup] frontend dist not found at {_DIST}; serving API only")
 # In local dev you'll usually run Vite 

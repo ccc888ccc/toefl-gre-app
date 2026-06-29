@@ -130,3 +130,18 @@ scp -i 你的私鑰 -r toefl-gre-app ubuntu@你的VM_IP:~/
 # 上去後一樣 cp .env、docker compose up -d --build
 ```
 （記得別把本機的 `backend/.venv`、`frontend/node_modules`、`data/` 一起傳。）
+
+---
+
+## 附:免費隨機網址（quick tunnel，無需網域）
+
+不想買網域時用這個。在 VM 上(已 docker compose 就緒)執行：
+
+```bash
+docker compose --profile quick up -d --build
+# 取得網址(找含 trycloudflare.com 的那行):
+docker compose logs tunnel-quick | grep trycloudflare
+```
+
+手機開那個 `https://xxxx.trycloudflare.com` 即可,有 HTTPS、電腦關機也能用(因為跑在 VM 上)。
+缺點:這個免費網址在 `tunnel-quick` 容器**重啟或 VM 重開機時會變**。每次變了就重跑上面那行 `logs` 指令看新網址。想要永久固定網址,之後加一個 Cloudflare 網域、改用 `--profile tunnel` 即可。
