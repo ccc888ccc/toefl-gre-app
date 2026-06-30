@@ -240,3 +240,22 @@ textarea.taller { min-height: 160px; }
 .pc-flag { font-size: 30px; font-weight: 800; }
 .pc-flag.ok { color: var(--good); }
 .pc-flag.no { color: var(--again); }
+
+/* --- topbar identity --- */
+.topbar-right { display: flex; align-items: center; gap: 12px; }
+.who { font-size: 13px; }
+
+/* --- admin: account management --- */
+.admin-users .card { margin-bottom: 14px; }
+.user-list { display: flex; flex-direction: column; gap: 8px; }
+.user-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 0; border-bottom: 1px solid var(--border);
+}
+.user-row:last-child { border-bottom: none; }
+.user-name { font-weight: 600; }
+.role-badge {
+  font-size: 11px; padding: 3px 9px; border-radius: 999px;
+  background: var(--surface-2); color: var(--muted); border: 1px solid var(--border);
+}
+.role-badge.admin { background: var(--primary); color: #fff; border-color: var(--primary); }

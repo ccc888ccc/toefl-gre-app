@@ -13,6 +13,24 @@ class TokenOut(BaseModel):
     token_type: str = "bearer"
 
 
+class MeOut(BaseModel):
+    username: str
+    role: str
+
+
+class UserCreate(BaseModel):
+    username: str
+    password: str
+    role: str = "member"  # 'member' | 'admin'
+
+
+class UserOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
+    username: str
+    role: str
+
+
 class CardBase(BaseModel):
     word: str
     part_of_speech: str | None = None

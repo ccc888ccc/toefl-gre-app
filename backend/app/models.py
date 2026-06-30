@@ -1,11 +1,12 @@
 """ORM models. Mirrors the schema in the spec (section 2).
 
-Phase 1 implements the GRE vocab SRS tables (users, vocab_cards, vocab_reviews).
-Writing/listening tables come in later phases.
+The vocab deck (vocab_cards) is SHARED across users; SRS progress (vocab_reviews)
+and the grade log (review_events) are PER-USER. Users have a role (admin/member)
+that gates the writing/practice tools.
 """
 from datetime import datetime, date
 from sqlalchemy import (
-    Integer, String, Text, Float, Date, DateTime, ForeignKey, func,
+    Integer, String, Text, Float, Date, DateTime, ForeignKey, UniqueConstraint, func,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -18,6 +19,7 @@ class User(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     username: Mapped[str] = mapped_column(String(64), unique=True, index=True)
     password_hash: Mapped[str] = mapped_column(String(255))
+    role: Mapped[str] = mapped_column(String(16), default="member")  # 'admin' | 'member'
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
 
@@ -33,18 +35,19 @@ class VocabCard(Base):
     synonyms: Mapped[str | None] = mapped_column(Text, nullable=True)   # GRE focus
     tags: Mapped[str | None] = mapped_column(String(255), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
-
-    review: Mapped["VocabReview"] = relationship(
-        back_populates="card", uselist=False, cascade="all, delete-orphan"
-    )
+    # The deck is SHARED. Per-user SRS progress lives in VocabReview, keyed by
+    # (user_id, card_id) -- a card has many review rows, one per learner, created
+    # lazily the first time a user studies it.
 
 
 class VocabReview(Base):
-    """Per-card SRS state (SM-2). One row per card."""
+    """Per-USER, per-card SRS state (SM-2). One row per (user_id, card_id)."""
     __tablename__ = "vocab_reviews"
+    __table_args__ = (UniqueConstraint("user_id", "card_id", name="uq_vocab_reviews_user_card"),)
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    card_id: Mapped[int] = mapped_column(ForeignKey("vocab_cards.id"), unique=True, index=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
+    card_id: Mapped[int] = mapped_column(ForeignKey("vocab_cards.id"), index=True)
     ease_factor: Mapped[float] = mapped_column(Float, default=2.5)
     interval_days: Mapped[int] = mapped_column(Integer, default=0)
     repetitions: Mapped[int] = mapped_column(Integer, default=0)
@@ -53,15 +56,14 @@ class VocabReview(Base):
     total_seen: Mapped[int] = mapped_column(Integer, default=0)
     total_correct: Mapped[int] = mapped_column(Integer, default=0)
 
-    card: Mapped["VocabCard"] = relationship(back_populates="review")
-
 
 class ReviewEvent(Base):
-    """Append-only log of every grade, used for streaks and daily-count stats.
-    Also the natural sync target for the PWA offline queue later."""
+    """Append-only log of every grade, used for per-user streaks and daily-count
+    stats. Also the natural sync target for the PWA offline queue later."""
     __tablename__ = "review_events"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
     card_id: Mapped[int] = mapped_column(ForeignKey("vocab_cards.id"), index=True)
     grade: Mapped[str] = mapped_column(String(8))   # again / hard / good / easy
     reviewed_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, index=True)
@@ -103,7 +105,7 @@ class PracticeLog(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     section: Mapped[str] = mapped_column(String(16), index=True)        # reading / listening
-    source: Mapped[str | None] = mapped_column(String(128), nullable=True)   # e.g. 學而思 set 12
+    source: Mapped[str | None] = mapped_column(String(128), nullable=True)   # e.g. xueersi set 12
     question_text: Mapped[str | None] = mapped_column(Text, nullable=True)
     question_type: Mapped[str | None] = mapped_column(String(48), nullable=True, index=True)
     user_choice: Mapped[str | None] = mapped_column(String(255), nullable=True)

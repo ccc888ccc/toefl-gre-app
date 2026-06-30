@@ -7,15 +7,16 @@ from sqlalchemy.orm import Session
 
 from ..database import get_db
 from ..models import WritingSubmission, ErrorPattern
-from ..auth import current_user
+from ..auth import require_admin
 from ..grader import grade, GraderError, TASK_SPECS
 from ..schemas import (
     WritingSubmitIn, WritingSubmissionOut, Feedback, SubmissionListItem,
     WeaknessItem, PromptSample,
 )
 
+# Admin-only: the writing / speaking grader is not available to member accounts.
 router = APIRouter(prefix="/api/writing", tags=["writing"],
-                   dependencies=[Depends(current_user)])
+                   dependencies=[Depends(require_admin)])
 
 # Built-in 2026-format prompts so you can practice without hunting for a question.
 PROMPT_BANK: list[dict] = [

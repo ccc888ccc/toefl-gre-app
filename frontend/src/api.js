@@ -27,6 +27,10 @@ async function request(path, { method = "GET", body } = {}) {
 export const api = {
   login: (username, password) =>
     request("/auth/login", { method: "POST", body: { username, password } }),
+  me: () => request("/auth/me"),
+  listUsers: () => request("/auth/users"),
+  createUser: (username, password, role) =>
+    request("/auth/users", { method: "POST", body: { username, password, role } }),
   learnQueue: () => request("/vocab/learn"),
   markLearned: (card_id) =>
     request("/vocab/learn", { method: "POST", body: { card_id } }),
@@ -38,7 +42,7 @@ export const api = {
   cards: (q) => request(`/vocab/cards?limit=3000${q ? `&q=${encodeURIComponent(q)}` : ""}`),
   stats: () => request("/stats"),
 
-  // Tool 2: writing / speaking grader
+  // Tool 2: writing / speaking grader (admin only)
   taskTypes: () => request("/writing/task-types"),
   prompts: () => request("/writing/prompts"),
   gradeSubmit: (body) => request("/writing/submit", { method: "POST", body }),
@@ -46,7 +50,7 @@ export const api = {
   submission: (id) => request(`/writing/submissions/${id}`),
   weaknesses: () => request("/writing/weaknesses"),
 
-  // Tool 3: reading / listening review
+  // Tool 3: reading / listening review (admin only)
   practiceSubmit: (body) => request("/practice/submit", { method: "POST", body }),
   practiceLogs: () => request("/practice/logs"),
   typeStats: () => request("/practice/type-stats"),

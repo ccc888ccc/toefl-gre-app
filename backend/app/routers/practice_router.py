@@ -5,13 +5,14 @@ from sqlalchemy.orm import Session
 
 from ..database import get_db
 from ..models import PracticeLog
-from ..auth import current_user
+from ..auth import require_admin
 from ..grader import GraderError
 from ..practice_ai import explain
 from ..schemas import PracticeSubmitIn, PracticeLogOut, PracticeExplanation, TypeStat
 
+# Admin-only: the reading / listening review tool is not available to members.
 router = APIRouter(prefix="/api/practice", tags=["practice"],
-                   dependencies=[Depends(current_user)])
+                   dependencies=[Depends(require_admin)])
 
 
 def _norm(s: str | None) -> str:

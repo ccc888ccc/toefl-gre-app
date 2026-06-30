@@ -25,6 +25,7 @@ from .config import settings
 from .database import Base, engine, SessionLocal
 from .routers import auth_router, vocab_router, stats_router, writing_router, practice_router
 from .seed_util import ensure_user, import_cards_from_csv
+from .migrations import run_migrations
 
 app = FastAPI(title="TOEFL/GRE Study — Vocab SRS", version="0.1.0")
 
@@ -46,6 +47,9 @@ app.include_router(practice_router.router)
 @app.on_event("startup")
 def on_startup():
     Base.metadata.create_all(bind=engine)
+    # Bring an existing DB up to the current schema (roles + per-user progress)
+    # BEFORE any ORM access, since the ORM now expects the new columns.
+    run_migrations(engine, settings.app_username)
     db = SessionLocal()
     try:
         ensure_user(db)
@@ -98,4 +102,3 @@ if os.path.isdir(_DIST):
         return FileResponse(os.path.join(_DIST, "index.html"))
 else:
     print(f"[startup] frontend dist not found at {_DIST}; serving API only")
-# In local dev you'll usually run Vite 
