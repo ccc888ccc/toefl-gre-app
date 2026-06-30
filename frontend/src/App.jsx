@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { getToken, clearToken } from "./api.js";
 import Login from "./components/Login.jsx";
-import ReviewView from "./components/ReviewView.jsx";
+import StudyView from "./components/StudyView.jsx";
 import StatsView from "./components/StatsView.jsx";
 import VocabView from "./components/VocabView.jsx";
 import GraderView from "./components/GraderView.jsx";
@@ -29,7 +29,7 @@ export default function App() {
       </header>
 
       <main className="content">
-        {tab === "review" && <ReviewView onAuthLost={logout} />}
+        {tab === "review" && <StudyView onAuthLost={logout} />}
         {tab === "vocab" && <VocabView />}
         {tab === "grader" && <GraderView onAuthLost={logout} />}
         {tab === "practice" && <PracticeView onAuthLost={logout} />}
@@ -38,7 +38,7 @@ export default function App() {
 
       <nav className="tabbar">
         <button className={tab === "review" ? "active" : ""} onClick={() => setTab("review")}>
-          <span className="ico">📚</span>複習
+          <span className="ico">📚</span>背單字
         </button>
         <button className={tab === "vocab" ? "active" : ""} onClick={() => setTab("vocab")}>
           <span className="ico">📖</span>字庫

@@ -1,3 +1,4 @@
+import random
 from datetime import date, datetime, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -12,7 +13,8 @@ from ..srs import update_sm2
 from ..grader import GraderError
 from ..vocab_ai import autofill_word
 from ..schemas import (
-    CardCreate, CardOut, ReviewCardOut, ReviewIn, ReviewOut, DueQueueOut,
+    CardCreate, CardOut, ReviewCardOut, ReviewIn, ReviewOut,
+    LearnIn, LearnQueueOut, ReviewQueueOut,
     AutofillIn, AutofillOut,
 )
 
@@ -36,19 +38,50 @@ def _find_existing(db: Session, word: str) -> VocabCard | None:
     return db.query(VocabCard).filter(func.lower(VocabCard.word) == word.lower()).first()
 
 
-@router.get("/queue", response_model=DueQueueOut)
-def queue(new_limit: int | None = None, db: Session = Depends(get_db)):
-    today = date.today()
-    if new_limit is None:
-        new_limit = settings.daily_new_cards
-
+@router.get("/learn", response_model=LearnQueueOut)
+def learn_queue(db: Session = Depends(get_db)):
+    """First-time learning zone: words never seen yet, in the order they were
+    added (no daily cap). The user just reads each card; no flip, no self-grade.
+    Marking one learned (POST /learn) moves it into the review zone."""
     q = db.query(VocabCard).options(joinedload(VocabCard.review)).join(VocabReview)
-    due = (q.filter(VocabReview.total_seen > 0, VocabReview.due_date <= today)
-             .order_by(VocabReview.due_date).all())
     new = (q.filter(VocabReview.total_seen == 0)
-             .order_by(VocabCard.id).limit(max(0, new_limit)).all())
-    cards = [_review_card_out(c) for c in due] + [_review_card_out(c) for c in new]
-    return DueQueueOut(due_count=len(due), new_count=len(new), cards=cards)
+             .order_by(VocabCard.id).all())
+    return LearnQueueOut(new_count=len(new), cards=[_review_card_out(c) for c in new])
+
+
+@router.post("/learn", response_model=ReviewOut)
+def mark_learned(body: LearnIn, db: Session = Depends(get_db)):
+    """Mark a brand-new word as learned. It leaves the learning zone and enters
+    the review zone, scheduled like a first successful pass (due tomorrow)."""
+    card = db.get(VocabCard, body.card_id)
+    if not card:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "card not found")
+    r = card.review
+    if r is None:
+        r = VocabReview(card_id=card.id)
+        db.add(r)
+    r.repetitions = 1
+    r.interval_days = 1
+    r.due_date = date.today() + timedelta(days=1)
+    r.last_reviewed = datetime.utcnow()
+    r.total_seen = max(r.total_seen, 1)
+    db.commit()
+    db.refresh(r)
+    return ReviewOut(
+        card_id=card.id, ease_factor=r.ease_factor, interval_days=r.interval_days,
+        repetitions=r.repetitions, due_date=r.due_date, correct=True,
+    )
+
+
+@router.get("/review", response_model=ReviewQueueOut)
+def review_queue(db: Session = Depends(get_db)):
+    """Review zone: only words already learned AND due today (SM-2 schedule).
+    The due batch is shuffled so the order is different every session."""
+    today = date.today()
+    q = db.query(VocabCard).options(joinedload(VocabCard.review)).join(VocabReview)
+    due = q.filter(VocabReview.total_seen > 0, VocabReview.due_date <= today).all()
+    random.shuffle(due)
+    return ReviewQueueOut(due_count=len(due), cards=[_review_card_out(c) for c in due])
 
 
 @router.post("/review", response_model=ReviewOut)

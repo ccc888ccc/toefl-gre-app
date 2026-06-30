@@ -27,8 +27,10 @@ async function request(path, { method = "GET", body } = {}) {
 export const api = {
   login: (username, password) =>
     request("/auth/login", { method: "POST", body: { username, password } }),
-  queue: (newLimit) =>
-    request(`/vocab/queue${newLimit != null ? `?new_limit=${newLimit}` : ""}`),
+  learnQueue: () => request("/vocab/learn"),
+  markLearned: (card_id) =>
+    request("/vocab/learn", { method: "POST", body: { card_id } }),
+  reviewQueue: () => request("/vocab/review"),
   review: (card_id, grade) =>
     request("/vocab/review", { method: "POST", body: { card_id, grade } }),
   addCard: (card) => request("/vocab/cards", { method: "POST", body: card }),

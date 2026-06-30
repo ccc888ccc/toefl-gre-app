@@ -9,19 +9,21 @@ const GRADES = [
   { key: "easy", label: "秒答", hint: "Easy", cls: "g-easy" },
 ];
 
+// Review zone: words already learned AND due today (SM-2 schedule), served in a
+// shuffled order each session. Flip to see the answer, then self-grade.
 export default function ReviewView({ onAuthLost }) {
   const [queue, setQueue] = useState(null);
   const [idx, setIdx] = useState(0);
   const [flipped, setFlipped] = useState(false);
-  const [meta, setMeta] = useState({ due: 0, fresh: 0 });
+  const [due, setDue] = useState(0);
   const [err, setErr] = useState("");
 
   const load = useCallback(async () => {
     setErr("");
     try {
-      const q = await api.queue();
+      const q = await api.reviewQueue();
       setQueue(q.cards);
-      setMeta({ due: q.due_count, fresh: q.new_count });
+      setDue(q.due_count);
       setIdx(0);
       setFlipped(false);
     } catch (e) {
@@ -53,8 +55,8 @@ export default function ReviewView({ onAuthLost }) {
       <div className="card center done">
         <div className="big-emoji">✅</div>
         <h2>今日複習完成</h2>
-        <p className="muted">複習 {meta.due} 張、新卡 {meta.fresh} 張</p>
-        <button className="primary" onClick={load}>再撈一批</button>
+        <p className="muted">今天到期 {due} 張，已全部複習。</p>
+        <button className="primary" onClick={load}>重新整理</button>
       </div>
     );
   }
@@ -64,14 +66,13 @@ export default function ReviewView({ onAuthLost }) {
     <div className="review">
       <div className="progress-row">
         <span>剩餘 {remaining}</span>
-        <span className="muted">複習 {meta.due} · 新 {meta.fresh}</span>
+        <span className="muted">今日到期 {due}</span>
       </div>
 
       <div className="flashcard" onClick={() => !flipped && setFlipped(true)}>
         <button type="button" className="tts card-tts" aria-label="發音"
           onClick={(e) => { e.stopPropagation(); speak(card.word); }}>🔊</button>
         <div className="word">{card.word}</div>
-        {card.is_new && <span className="badge">新字</span>}
 
         {!flipped ? (
           <p className="tap-hint">點一下看解釋</p>

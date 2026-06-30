@@ -49,15 +49,17 @@ def on_startup():
     db = SessionLocal()
     try:
         ensure_user(db)
-        # Auto-import the bundled starter deck on a fresh DB so the app is
-        # usable immediately, before you run the full 1000-word generator.
-        from .models import VocabCard
-        if db.query(VocabCard).count() == 0:
-            starter = os.path.join(os.path.dirname(__file__), "..", "..", "seed", "starter_words.csv")
-            starter = os.path.abspath(starter)
-            if os.path.exists(starter):
-                n = import_cards_from_csv(db, starter)
-                print(f"[startup] imported {n} starter cards")
+        # Import the version-controlled vocab deck on every startup. The import
+        # is idempotent (skips words already in the DB, case-insensitive), so it
+        # safely TOPS UP the deck after each deploy: add words to
+        # seed/starter_words.csv, git push, restart, and the new ones appear on
+        # the server without touching the (gitignored) database file.
+        starter = os.path.join(os.path.dirname(__file__), "..", "..", "seed", "starter_words.csv")
+        starter = os.path.abspath(starter)
+        if os.path.exists(starter):
+            n = import_cards_from_csv(db, starter)
+            if n:
+                print(f"[startup] imported {n} new cards from seed CSV")
     finally:
         db.close()
 

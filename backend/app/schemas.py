@@ -43,6 +43,10 @@ class ReviewIn(BaseModel):
     grade: str  # again | hard | good | easy
 
 
+class LearnIn(BaseModel):
+    card_id: int
+
+
 class ReviewOut(BaseModel):
     card_id: int
     ease_factor: float
@@ -52,9 +56,13 @@ class ReviewOut(BaseModel):
     correct: bool
 
 
-class DueQueueOut(BaseModel):
-    due_count: int
+class LearnQueueOut(BaseModel):
     new_count: int
+    cards: list[ReviewCardOut]
+
+
+class ReviewQueueOut(BaseModel):
+    due_count: int
     cards: list[ReviewCardOut]
 
 
